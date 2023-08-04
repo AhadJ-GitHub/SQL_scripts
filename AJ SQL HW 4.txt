@@ -1,0 +1,220 @@
+
+-- HOMEWORK part
+
+
+-- Question 1.
+
+CREATE TABLE students (
+    s_id    NUMBER
+    CONSTRAINT s_id_nn NOT NULL,
+    CONSTRAINT s_id_pk PRIMARY KEY (s_id),
+    first_name    VARCHAR2(30),
+    last_name    VARCHAR2(30),
+    phone_number    VARCHAR2(30),
+    email    VARCHAR2(30) 
+)
+
+CREATE TABLE activities (
+    a_id    NUMBER
+    CONSTRAINT a_id_nn NOT NULL,
+    CONSTRAINT a_id_pk PRIMARY KEY (a_id),
+    a_name    VARCHAR2(30)
+    CONSTRAINT a_name_nn NOT NULL,
+    cost_    NUMBER
+    CONSTRAINT cost_nn NOT NULL    
+)
+
+CREATE TABLE schedule (
+    s_id NUMBER,
+    CONSTRAINT sch_s_id_fk FOREIGN KEY (s_id)
+    REFERENCES students (s_id),
+    a_id NUMBER,
+    CONSTRAINT sch_a_id_fk FOREIGN KEY (a_id)
+    REFERENCES activities (a_id),
+    s_date DATE
+)
+
+-- Question 2.
+
+INSERT INTO students (s_id, first_name, last_name, phone_number, email)
+SELECT employee_id, first_name, last_name, phone_number, email
+FROM hr.employees
+
+-- Question 3.
+
+UPDATE students
+SET phone_number='***'
+WHERE s_id > 200
+
+-- Question 4.
+
+UPDATE students
+SET first_name=UPPER(first_name),
+last_name=UPPER(last_name)
+
+-- Question 5.
+
+UPDATE students
+SET email='DSA'
+WHERE s_id > 150
+
+-- Question 6.
+
+CREATE TABLE programmers (
+    e_id NUMBER,
+    f_n VARCHAR2(20),
+    l_n VARCHAR2(20),
+    email VARCHAR2(20),
+    ph_n VARCHAR2(20),
+    h_d DATE,
+    job_id VARCHAR2(20),
+    salary NUMBER,
+    com_pct NUMBER,
+    m_id NUMBER,
+    dep_id NUMBER
+)
+
+INSERT INTO programmers
+SELECT *
+FROM hr.employees
+WHERE job_id LIKE '%PROG%'
+
+-- Question 7.
+
+DELETE
+FROM students
+WHERE s_id BETWEEN 150 AND 160
+
+-- Question 8.
+
+a)
+
+INSERT INTO activities VALUES (125, 'Castello', 1500)
+
+INSERT INTO schedule (s_id)
+SELECT s_id 
+FROM students
+
+INSERT INTO schedule (a_id)
+SELECT a_id 
+FROM activities
+
+INSERT INTO schedule (s_date) VALUES (DATE '2022-11-03')
+INSERT INTO schedule (s_date) VALUES (DATE '2023-03-27')
+INSERT INTO schedule (s_date) VALUES (DATE '2025-07-18')
+
+TRUNCATE TABLE schedule
+SELECT * FROM schedule
+
+b)
+
+DROP TABLE schedule
+
+-- Question 9.
+
+a)
+
+SELECT ADD_MONTHS(TRUNC(DATE '2000-01-27', 'YY'), 12) first_date, 
+ADD_MONTHS(TRUNC(DATE '2000-01-27', 'YY'), 24) - 1 last_date
+FROM dual
+
+b)
+
+SELECT ADD_MONTHS(TRUNC(DATE '2000-01-27', 'MM'),1) first_date, 
+LAST_DAY(ADD_MONTHS(TRUNC(DATE '2000-01-27', 'MM'),1)) last_date
+FROM dual
+
+c)
+
+SELECT ADD_MONTHS(TRUNC(DATE '2000-02-27', 'MM'), -1) first_date, 
+LAST_DAY(ADD_MONTHS(TRUNC(DATE '2000-02-27', 'MM'), -1)) last_date
+FROM dual
+
+-- Question 10.
+
+CREATE TABLE participants_ (
+    first_name VARCHAR2(20),
+    last_name VARCHAR2(20),
+    salary NUMBER NOT NULL CHECK(salary > 10000)
+)
+
+-- CASE STUDY part
+
+-- Question 1.
+
+SELECT first_name, salary, department_id,
+FIRST_VALUE (first_name)
+OVER (ORDER BY salary) lowest_salary_employee
+FROM hr.employees
+WHERE department_id = 90
+
+-- Question 2.
+
+SELECT department_name, name_, salary,
+RANK()
+OVER (PARTITION BY department_name ORDER BY salary) rank_
+FROM 
+(SELECT dep.department_name, emp.first_name || ' ' || emp.last_name name_, emp.salary 
+FROM hr.employees emp
+LEFT JOIN hr.departments dep
+ON emp.department_id=dep.department_id
+WHERE department_name IN ('Purchasing' , 'Human Resources'))
+
+-- Question 3.
+
+SELECT *
+FROM 
+(SELECT * 
+FROM hr.employees
+WHERE department_id = 50
+ORDER BY salary)
+WHERE ROWNUM <=3
+
+-- Question 4.
+
+SELECT first_name, last_name, salary,
+LAG (salary, 1, 0)
+OVER (ORDER BY hire_date) lag_in_salary
+FROM hr.employees
+WHERE job_id = 'IT_PROG'
+
+-- Question 5.
+
+SELECT emp.employee_id, emp.first_name, emp.last_name, emp.job_id, 
+j.job_title, jh.employee_id, jh.start_date, jh.end_date, jh.job_id
+FROM hr.employees emp
+JOIN hr.job_history jh
+ON emp.employee_id=jh.employee_id
+JOIN hr.jobs j
+ON emp.job_id=j.job_id
+WHERE jh.job_id='IT_PROG'
+
+-- Question 6.
+
+CREATE TABLE new_emp AS (SELECT * FROM hr.employees);
+
+SELECT MAX(salary)
+FROM hr.employees
+GROUP BY department_id;
+
+UPDATE new_emp
+SET salary= CASE department_id
+WHEN 10 THEN 4400
+WHEN 20 THEN 13000
+WHEN 30 THEN 11000
+WHEN 40 THEN 6500
+WHEN 50 THEN 8200
+WHEN 60 THEN 9000
+WHEN 70 THEN 10000
+WHEN 80 THEN 14000
+WHEN 90 THEN 24000
+WHEN 100 THEN 12008
+WHEN 110 THEN 12008
+WHEN NULL THEN 7000
+END;
+
+-- Question 7.
+
+CREATE TABLE new_emp AS (SELECT * FROM hr.employees);
+UPDATE new_emp
+SET salary=salary*1.3

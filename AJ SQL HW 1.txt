@@ -1,0 +1,117 @@
+-- HOMEWORK part
+
+-- Question 1.
+SELECT first_name || ' ' || last_name AS full_name, salary, commission_pct, hire_date 
+FROM hr.employees 
+WHERE salary < 10000
+
+-- Question 2.
+SELECT DISTINCT city 
+FROM hr.locations 
+ORDER BY city
+
+-- Question 3.
+SELECT first_name, hire_date, job_id 
+FROM hr.employees 
+WHERE job_id IN ('IT_PROG','SA_MAN') AND EXTRACT (YEAR FROM hire_date) BETWEEN 2002 AND 2005
+
+-- Question 4.
+SELECT * 
+FROM hr.jobs 
+ORDER BY job_title DESC 
+
+-- Question 5.
+SELECT * 
+FROM hr.employees 
+WHERE commission_pct IS NULL AND salary BETWEEN 5000 AND 10000 AND department_id=30 
+
+-- Question 6.
+SELECT * 
+FROM hr.employees 
+WHERE hire_date > DATE '2008-01-01' 
+
+-- Question 7.
+SELECT * 
+FROM hr.employees 
+WHERE employee_id IN (150,160,170)
+
+-- Question 8.
+SELECT * 
+FROM hr.employees 
+WHERE first_name LIKE 'S%' or last_name LIKE 'S%' 
+
+-- Question 9.
+SELECT first_name, last_name 
+FROM hr.employees 
+WHERE last_name LIKE '%___b%'
+
+-- CASE STUDY part
+
+-- Question 1.
+SELECT job_title, min_salary, max_salary, max_salary - min_salary
+FROM hr.jobs
+WHERE max_salary BETWEEN 12000 AND 18000
+
+-- Question 2. (Depends on the interpretation)
+-- Version 1.
+SELECT *
+FROM hr.employees
+WHERE commission_pct=0 AND salary BETWEEN 7000 AND 12000 AND department_id NOT IN (50,30,80)
+-- Version 2.
+SELECT *
+FROM hr.employees
+WHERE commission_pct IS NULL AND salary BETWEEN 7000 AND 12000 AND department_id NOT IN (50,30,80)
+
+-- Question 3.
+SELECT first_name || ' ' || last_name "Full Name", hire_date, commission_pct, email, REPLACE(phone_number, '.', '-') "Phone Numbers"
+FROM hr.employees
+WHERE salary > 11000
+ORDER BY "Full Name" DESC
+
+-- Question 4.
+SELECT first_name ,last_name, salary
+FROM hr.employees
+WHERE (first_name LIKE '%m') AND (hire_date < DATE '2010-06-05')
+
+-- Question 5.
+SELECT first_name || ' ' || last_name "Full_Name", phone_number || ' - ' || email "Contact_Details", salary "Remuneration"
+FROM hr.employees
+WHERE (salary NOT BETWEEN 9000 AND 17000) AND (commission_pct IS NOT NULL)
+
+-- Question 6.
+SELECT *
+FROM hr.departments
+WHERE department_name='Marketing'
+
+-- Question 7.
+SELECT *
+FROM hr.job_history
+ORDER BY employee_id DESC, start_date ASC
+
+-- Question 8.
+SELECT job_id, salary
+FROM hr.employees
+WHERE (phone_number LIKE '515%' OR phone_number LIKE '590%') AND EXTRACT (YEAR FROM hire_date) > 2003
+ORDER BY hire_date, salary
+
+-- Question 9.
+SELECT *
+FROM hr.employees
+WHERE EXTRACT(YEAR FROM hire_date)=2001
+
+-- Question 10.
+SELECT first_name, last_name
+FROM hr.employees
+WHERE EXTRACT(YEAR FROM hire_date) NOT IN (2006,2007)
+
+-- Question 11.
+SELECT email, job_id, first_name, hire_date
+FROM hr.employees
+WHERE EXTRACT(YEAR FROM hire_date)=2007 OR EXTRACT(MONTH FROM hire_date)=1
+
+-- Question 12.
+SELECT *
+FROM hr.employees
+WHERE EXTRACT(YEAR FROM hire_date) > 2007 OR salary < 10000
+
+

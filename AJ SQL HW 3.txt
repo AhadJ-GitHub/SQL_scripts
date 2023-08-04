@@ -1,0 +1,159 @@
+-- HOMEWORK part
+
+-- Question 1.
+SELECT emp.last_name, jb.job_title
+FROM hr.employees emp
+LEFT JOIN hr.jobs jb
+ON emp.job_id=jb.job_id
+WHERE emp.commission_pct IS NOT NULL AND emp.department_id=30
+
+-- Question 2.
+SELECT DISTINCT (emp.first_name || ' ' || emp.last_name) man_name, emp.salary, dep.manager_id, dep.department_name, emp.hire_date
+FROM hr.employees emp
+JOIN hr.employees m
+ON emp.employee_id=m.manager_id
+JOIN hr.departments dep
+ON emp.department_id=dep.department_id
+WHERE EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM m.hire_date) > 5
+ORDER BY man_name
+
+-- Question 3.
+SELECT (emp.first_name || ' ' || emp.last_name) employee_,
+(man.first_name || ' ' || man.last_name) manager_
+FROM hr.employees emp
+JOIN hr.employees man
+ON man.employee_id=emp.manager_id
+WHERE emp.hire_date < man.hire_date
+
+-- Question 4.
+SELECT emp.first_name, jb.job_title, h.start_date, h.end_date
+FROM hr.employees emp
+JOIN hr.jobs jb
+ON emp.job_id=jb.job_id
+JOIN hr.job_history h
+ON emp.employee_id=h.employee_id
+WHERE (h.end_date - h.start_date) < 180
+
+-- Question 5.
+SELECT  department_name, AVG(salary) average_salary, COUNT(salary) number_of_employees
+FROM
+(SELECT (emp.first_name || ' ' || emp.last_name) employee_name, dep.department_name, emp.salary
+FROM hr.employees emp
+LEFT JOIN hr.departments dep
+ON emp.department_id=dep.department_id
+WHERE commission_pct IS NOT NULL)
+GROUP BY department_name
+
+-- Question 6.
+SELECT (emp.first_name || ' ' || emp.last_name) employee_, c_.country_id
+FROM hr.employees emp
+JOIN hr.departments dep
+ON dep.department_id=emp.department_id
+JOIN hr.locations lc
+ON lc.location_id=dep.location_id
+JOIN hr.countries c_
+ON c_.country_id=lc.country_id
+
+-- CASE STUDY part
+
+-- Question 1.
+SELECT employee_id, EXTRACT(YEAR FROM MIN(start_date)) First_promotion_year
+FROM 
+(SELECT *
+FROM hr.employees emp
+JOIN hr.job_history jh
+USING (employee_id))
+GROUP BY employee_id
+
+-- Question 2.
+SELECT employee_id, first_name, last_name, region_name, country_name, city, department_name, COUNT(*) count_
+FROM hr.employees emp
+JOIN hr.job_history jh
+USING (employee_id)
+JOIN hr.departments dep
+ON jh.department_id=dep.department_id
+JOIN hr.locations lc
+ON dep.location_id=lc.location_id
+JOIN hr.countries cc
+ON lc.country_id=cc.country_id
+JOIN hr.regions rg
+ON cc.region_id=rg.region_id
+GROUP BY employee_id, first_name, last_name, region_name, country_name, city, department_name
+HAVING COUNT(*) > 1
+
+-- Question 3.
+SELECT MIN(hire_date), MAX(hire_date)
+FROM
+(SELECT emp.employee_id, emp.first_name, emp.last_name, emp.hire_date, dep.department_name
+FROM hr.employees emp
+JOIN hr.departments dep
+ON emp.department_id=dep.department_id
+WHERE dep.department_name IN ('IT','Human Resources'))
+
+-- Question 4.
+SELECT employee_id, first_name, last_name, hire_date, CURRENT_DATE,
+ROUND(CURRENT_DATE - hire_date) days_, 
+ROUND(MONTHS_BETWEEN(CURRENT_DATE,hire_date)) months_, 
+EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM hire_date) years_
+FROM hr.employees
+ORDER BY hire_date
+
+-- Question 5.
+SELECT department_name, MIN(hire_date) earliest_hire
+FROM 
+(SELECT emp.employee_id, emp.first_name, emp.last_name, emp.hire_date, dep.department_name, emp.department_id
+FROM hr.employees emp
+LEFT JOIN hr.departments dep
+ON emp.department_id=dep.department_id)
+GROUP BY department_name
+ORDER BY earliest_hire
+
+-- Question 6.
+SELECT city, COUNT(department_name) "# of departments with no employees"
+FROM 
+(SELECT emp.employee_id, emp.first_name, emp.last_name, emp.hire_date, dep.department_name, dep.department_id, lc.city, lc.location_id
+FROM hr.employees emp
+FULL JOIN hr.departments dep
+ON emp.department_id=dep.department_id
+JOIN hr.locations lc
+ON dep.location_id=lc.location_id
+WHERE employee_id IS NULL)
+GROUP BY city
+
+-- Question 7.
+SELECT seasons, COUNT(employee_id) "Number of hired employees"
+FROM 
+(SELECT  employee_id, first_name, last_name, CASE
+WHEN month_ IN (12,1,2) THEN 'Winter'
+WHEN month_ IN (3,4,5) THEN 'Spring'
+WHEN month_ IN (6,7,8) THEN 'Summer'
+WHEN month_ IN (9,10,11) THEN 'Autumn'
+END seasons
+FROM 
+(SELECT employee_id, first_name, last_name, REPLACE(hire_date, hire_date, EXTRACT(MONTH FROM hire_date)) month_
+FROM hr.employees))
+GROUP BY seasons
+ORDER BY seasons DESC
+
+-- Question 8.
+
+-- Version 1.
+SELECT city, ROUND(AVG(salary)) "Average salary by cities"
+FROM
+(SELECT emp.employee_id, emp.first_name, emp.last_name, emp.hire_date, dep.department_name, dep.department_id, emp.salary, lc.city, lc.location_id
+FROM hr.employees emp
+JOIN hr.departments dep
+ON emp.department_id=dep.department_id
+JOIN hr.locations lc
+ON dep.location_id=lc.location_id)
+GROUP BY city
+HAVING ROUND(AVG(salary)) > 5000
+
+-- Version 2. (* Find the cities of employees with salaries more than 5000)
+SELECT emp.employee_id, emp.first_name, emp.last_name, emp.salary, lc.city
+FROM hr.employees emp
+LEFT JOIN hr.departments dep
+ON emp.department_id=dep.department_id
+LEFT JOIN hr.locations lc
+ON dep.location_id=lc.location_id
+WHERE emp.salary > 5000

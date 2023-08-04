@@ -1,0 +1,156 @@
+
+-- HOMEWORK part
+
+-- Question 1.
+SELECT *
+FROM hr.employees
+WHERE EXTRACT (MONTH FROM hire_date) = 5
+
+-- Question 2.
+SELECT *
+FROM hr.employees
+WHERE EXTRACT (YEAR FROM hire_date) = EXTRACT (YEAR FROM CURRENT_DATE)
+
+-- Question 3.
+SELECT (SYSDATE) - (DATE '2011-01-01') "Difference in days"
+FROM dual
+
+-- Question 4.
+SELECT MAX(salary) "Maximum Salary"
+FROM hr.employees
+
+-- Question 5.
+SELECT department_id, COUNT(*) "Number of Employees"
+FROM hr.employees
+GROUP BY department_id
+
+-- Question 6.
+SELECT COUNT(*) "Employees joined after 15th"
+FROM hr.employees
+WHERE EXTRACT (DAY FROM hire_date) > 15
+
+-- Question 7. (Depends on the interpretation)
+-- Version 1.
+SELECT department_id, AVG(salary) "Average Salary"
+FROM hr.employees
+WHERE commission_pct IS NOT NULL OR commission_pct != 0
+GROUP BY department_id
+
+-- Version 2.
+SELECT department_id, AVG(salary) "Average Salary"
+FROM hr.employees
+WHERE commission_pct IS NOT NULL
+GROUP BY department_id
+
+-- Question 8.
+SELECT DISTINCT job_id
+FROM hr.employees
+GROUP BY job_id, salary
+HAVING AVG(salary) > 10000
+
+-- Question 9.
+SELECT job_id, COUNT(*), SUM(salary), MAX(salary) - MIN(salary)
+FROM hr.employees
+GROUP BY job_id
+
+-- Question 10.
+SELECT manager_id, COUNT(*) "Number of employees managed by the manager"
+FROM hr.employees
+GROUP BY manager_id
+
+-- Question 11. (theoretical)
+The key difference between CHAR and VARCHAR2 is that the length of characters for CHAR is fixed but for VARCHAR2 is variable (depends on the input).
+VARCHAR2 size varies from 1 byte to 4 KB.
+CHAR size is 2000 bytes or characters with default/minimum size of 1 byte.
+
+-- CASE STUDY part
+
+-- Question 1.
+SELECT job_id, MIN(salary), MAX(salary), AVG(salary),  hire_date
+FROM hr.employees
+WHERE hire_date BETWEEN CURRENT_DATE - 15 * 365.25 AND CURRENT_DATE
+GROUP BY job_id, hire_date
+
+-- Question 2.
+SELECT department_id, hire_date, COUNT(*)
+FROM hr.employees
+WHERE EXTRACT (YEAR FROM hire_date) > 2005
+GROUP BY department_id, hire_date
+
+-- Question 3.
+SELECT department_id, MAX(salary) - MIN(salary)
+FROM hr.employees
+GROUP BY department_id
+HAVING MAX(salary) - MIN(salary) > 5000
+
+-- Question 4.
+SELECT department_id, commission_pct, salary
+FROM hr.employees
+GROUP BY department_id, commission_pct, salary
+HAVING commission_pct IS NULL
+
+-- Question 5.
+SELECT job_id, COUNT(*)
+FROM hr.employees
+GROUP BY job_id
+HAVING AVG(salary) BETWEEN 3000 AND 7000
+
+-- Question 6.
+SELECT COUNT(first_name) - COUNT(DISTINCT first_name) "Number of employees with same name"
+FROM hr.employees
+
+-- Question 7.
+SELECT SUBSTR(phone_number, 1, 3) "Same phone code", department_id, COUNT(*) "Number of employees"
+FROM hr.employees
+WHERE department_id IN (50,90) 
+GROUP BY department_id, SUBSTR(phone_number, 1, 3)
+
+-- Question 8.
+SELECT department_id, COUNT(*)
+FROM hr.employees
+WHERE EXTRACT(MONTH FROM hire_date) IN (3,4,5,9,10,11)
+GROUP BY department_id
+HAVING COUNT(*) > 5
+
+-- Question 9.
+SELECT department_id, COUNT(*)
+FROM hr.employees
+GROUP BY department_id
+HAVING MAX(salary) > 5000
+
+-- Question 10.
+SELECT first_name, REPLACE (first_name, SUBSTR(first_name, 2, 1), SUBSTR(first_name, LENGTH(first_name), 1))
+FROM hr.employees
+
+CC 
+
+8-ci misalı düzəltdim, bu səfər düz işləməlidi baxarsız buna da zəhmət olmasa.
+
+SELECT department_id, COUNT(*)
+FROM hr.employees
+WHERE EXTRACT(MONTH FROM hire_date) IN (3,4,5,9,10,11)
+GROUP BY department_id
+HAVING COUNT(*) > 5
+
+7-ci misalda isə belə düzəliş etmişəm.
+
+SELECT SUBSTR(phone_number, 1, 3) "Same phone code", department_id, COUNT(*) "Number of employees"
+FROM hr.employees
+WHERE department_id IN (50,90) 
+GROUP BY department_id, SUBSTR(phone_number, 1, 3)
+
+6-cı misalda tamam səhv rəqəm çıxardırdı düzəltdim onu da.
+
+SELECT SUM(count_) "Number of employees with same name"
+FROM (SELECT COUNT(*) count_
+FROM hr.employees
+GROUP BY first_name
+HAVING COUNT(*) > 1)
+
+10-cu sualda düzgün formada belə olmalıdır.
+
+SELECT first_name, 
+CONCAT(SUBSTR(first_name, 1, 1) , CONCAT(SUBSTR(first_name, LENGTH(first_name), 1), SUBSTR(first_name, 3, LENGTH(first_name)-2))) "CONCAT_"
+FROM hr.employees
+
+Dəyərli şərhlərinizi səbirsizliklə gözləyirəm :D

@@ -1,0 +1,57 @@
+
+-- Additional task solution:
+
+SELECT *
+FROM
+(SELECT *
+FROM
+(SELECT employee_id, start_month, SUM(total_days)
+FROM
+(SELECT employee_id, 
+to_char(vac_start, 'Month') start_month, 
+to_char(vac_end, 'Month') end_month, 
+vac_start, vac_end,
+CASE
+WHEN (EXTRACT(MONTH FROM vac_end) = EXTRACT(MONTH FROM vac_start)) THEN vac_end - vac_start
+WHEN vac_end - vac_start > LAST_DAY(vac_start) - vac_start THEN (LAST_DAY(vac_start) - vac_start)
+END total_days
+FROM vacations
+UNION
+SELECT employee_id, 
+to_char(vac_start, 'Month') start_month, 
+to_char(vac_end, 'Month') end_month, 
+vac_start, vac_end,
+CASE
+WHEN (EXTRACT(MONTH FROM vac_end) = EXTRACT(MONTH FROM vac_start)) THEN vac_end - vac_start
+WHEN vac_end - vac_start > LAST_DAY(vac_start) - vac_start THEN (EXTRACT(DAY FROM vac_end))
+END total_days
+FROM vacations)
+WHERE total_days != EXTRACT(DAY FROM vac_end)
+GROUP BY start_month, employee_id
+ORDER BY employee_id)
+UNION ALL
+SELECT*
+FROM 
+(SELECT employee_id, end_month, total_days
+FROM
+(SELECT employee_id, 
+to_char(vac_start, 'Month') start_month, 
+to_char(vac_end, 'Month') end_month, 
+vac_start, vac_end,
+CASE
+WHEN (EXTRACT(MONTH FROM vac_end) = EXTRACT(MONTH FROM vac_start)) THEN vac_end - vac_start
+WHEN vac_end - vac_start > LAST_DAY(vac_start) - vac_start THEN (LAST_DAY(vac_start) - vac_start)
+END total_days
+FROM vacations
+UNION
+SELECT employee_id, 
+to_char(vac_start, 'Month') start_month, 
+to_char(vac_end, 'Month') end_month, 
+vac_start, vac_end,
+CASE
+WHEN (EXTRACT(MONTH FROM vac_end) = EXTRACT(MONTH FROM vac_start)) THEN vac_end - vac_start
+WHEN vac_end - vac_start > LAST_DAY(vac_start) - vac_start THEN (EXTRACT(DAY FROM vac_end))
+END total_days
+FROM vacations)
+WHERE total_days = EXTRACT(DAY FROM vac_end)))
+ORDER BY employee_id
