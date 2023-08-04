@@ -1,0 +1,147 @@
+-- SQL Quiz solutions
+
+-- Question 1.
+
+SELECT first_name, last_name, email, CONCAT(email, '@tfug.az') new_email 
+FROM hr.employees
+WHERE first_name NOT LIKE 'M%' OR LENGTH(last_name) > 6 ;
+
+-- Question 2.
+
+SELECT first_name, last_name, hire_date, CASE 
+WHEN EXTRACT(YEAR FROM hire_date) < 2006 THEN 'Kohne isciler'
+ELSE 'Yeni isciler'
+END Ishciler
+FROM hr.employees ;
+
+-- Question 3.
+
+SELECT * 
+FROM hr.employees
+WHERE first_name = UPPER(first_name) ;
+
+-- Question 4.
+
+SELECT first_name || ' ' || last_name AS employee_name, hire_date
+FROM hr.employees
+WHERE department_id = (SELECT department_id
+FROM hr.employees
+WHERE first_name = 'Clara') AND first_name <> 'Clara' ;
+
+-- Question 5.
+
+SELECT  department_id, SUM(salary)
+FROM hr.employees
+GROUP BY department_id ;
+
+-- Question 6.
+
+-- Solution 1.
+
+SELECT ee.last_name, 
+(SELECT COUNT(emp.first_name) 
+FROM hr.employees emp
+WHERE emp.hire_date < ee.hire_date) before_employee,
+(SELECT COUNT(emp.first_name) 
+FROM hr.employees emp
+WHERE emp.hire_date > ee.hire_date) after_employee
+FROM hr.employees ee
+ORDER BY ee.hire_date ;
+
+-- Solution 2.
+
+SELECT last_name, 
+(RANK()
+OVER (ORDER BY hire_date)) - 1 before_employee,
+(RANK()
+OVER (ORDER BY hire_date DESC)) - 1 after_employee
+FROM hr.employees
+ORDER BY hire_date ;
+
+-- Question 7.
+
+SELECT *
+FROM
+(SELECT ee.first_name || ' ' || ee.last_name full_name, ee.salary, 
+(SELECT COUNT(emp.first_name)
+FROM hr.employees emp
+WHERE emp.salary < ee.salary) employee_salary_greater_than
+FROM hr.employees ee
+ORDER BY salary DESC)
+WHERE employee_salary_greater_than >= 3
+
+-- KANAN Solution 
+
+SELECT *
+FROM hr.employees
+ORDER BY salary DESC
+FETCH FIRST ((SELECT COUNT(employee_id) FROM hr.employees) - 3) ROWS ONLY
+
+-- TOGHRUL Solution
+
+SELECT *
+FROM hr.employees
+ORDER BY salary
+OFFSET 3 ROWS
+
+-- Question 8.
+
+SELECT *
+FROM customers
+WHERE id IN
+(SELECT DISTINCT customer_id
+FROM orders
+WHERE product_name = 'A' AND customer_id IN
+(SELECT DISTINCT customer_id
+FROM orders
+WHERE product_name = 'B'))
+AND id NOT IN 
+(SELECT DISTINCT customer_id
+FROM orders
+WHERE product_name = 'C')
+
+-- Question 9.
+
+-- Solution WITHOUT DENSE_RANK
+
+SELECT scr.score,  
+(SELECT COUNT(DISTINCT s.score) 
+FROM scores s
+WHERE s.score > scr.score)+1 score_rank
+FROM scores scr
+ORDER BY score DESC;
+
+-- Solution WITH DENSE_RANK
+
+SELECT score, 
+DENSE_RANK()
+OVER (ORDER BY score DESC) score_rank
+FROM scores
+ORDER BY score DESC;
+
+-- Question 10.
+
+-- Solution 1.
+
+SELECT '* * * * *
+
+* * * *
+
+* * *
+
+* *
+
+*' THE_SOLUTION_asdf
+FROM dual
+
+-- Solution 2. (Doesn't work in LIVE SQL, works in Microsoft SQL Server)
+-- You can RUN from this link: https://onecompiler.com/sqlserver/
+
+DECLARE @var int
+SELECT @var = 5
+WHILE @var > 0
+BEGIN
+PRINT replicate('* ', @var)
+SET @var = @var - 1
+END
+
